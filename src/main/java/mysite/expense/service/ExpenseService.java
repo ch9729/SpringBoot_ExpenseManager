@@ -57,8 +57,10 @@ public class ExpenseService {
 
     private Expense mapToEntity(ExpenseDTO expenseDTO) throws ParseException {
         Expense expense = modelMapper.map(expenseDTO, Expense.class);
-        // 1. expenseId 입력(유니크 문자열 자동생성)
-        expense.setExpenseId(UUID.randomUUID().toString());
+        // 1. expenseId 입력(유니크 문자열 자동생성), 업데이트 경우 id를 만들면 안되서 id값이 null 일경우에만 생성
+        if(expenseDTO.getId() == null) {
+            expense.setExpenseId(UUID.randomUUID().toString());
+        }
         // 2. date 입력("2024-12-17" => 자바 sql로 변경)
         expense.setDate(DataTimeUtil.convertStringToDate(expenseDTO.getDataString()));
         return expense;
@@ -69,6 +71,30 @@ public class ExpenseService {
                                  () -> new RuntimeException("해당 ID를 찾을수 없습니다."));
 
         expRepo.delete(expense);
+    }
+    
+    // expenseId로 수정할 expense 찾아서 DTO변환하여 리턴
+    public ExpenseDTO getExpenseById(String id) {
+        Expense expense = expRepo.findByExpenseId(id).orElseThrow(
+                              () -> new RuntimeException("해당 ID를 찾을수 없습니다."));
+        ExpenseDTO expenseDTO = mapToDTO(expense);
+        return expenseDTO;  //DTO 변환
+    }
+
+    public List<ExpenseDTO> getFilterExpenses(String keyword, String sortBy) {
+        List<Expense> list = expRepo.findByNameContainingOrDescriptionContaining(keyword, keyword);
+        List<ExpenseDTO> listDTO = list.stream()    // 스트림으로 변환
+                .map(this::mapToDTO) // mapToDTO로 모두 변환
+                .collect(Collectors.toList());   // 다시 리스트로
+
+        //날짜 또는 가격으로 정렬
+        if(sortBy.equals("date")) {
+            listDTO.sort(((o1,o2) -> o2.getDate().compareTo(o1.getDate())));
+        } else {
+            listDTO.sort(((o1,o2) -> o2.getAmount().compareTo(o1.getAmount())));
+        }
+
+        return listDTO;
     }
 }
 

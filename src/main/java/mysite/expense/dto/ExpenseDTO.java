@@ -17,7 +17,7 @@ public class ExpenseDTO {
     private String expenseId;
     private String name;
     private String description;
-    private long amount;
+    private Long amount;
     private Date date;
     private String dataString;  //날짜를 입력받을때 사용
 }

@@ -6,7 +6,8 @@
         <title>Expense 만들기</title>
     </head>
     <body>
-        <h1>새 비용 만들기</h1>
+        <h1 th:if="${expense.id == null}">새 비용 만들기</h1>
+        <h1 th:if="${expense.id != null}">비용 수정하기</h1>
         <hr />
         <form th:object="${expense}" th:action="@{/saveOrUpdateExpense}" method="post">
             <input type="text" th:field="*{name}" placeholder="이름 입력" />
@@ -17,7 +18,12 @@
             <br /><br />
             <textarea rows="5" placeholder="설명 입력" th:field="*{description}" style="resize: none !important;"></textarea>
             <br /><br />
-            <button type="submit">Submit</button>
+            <button type="submit" th:text="${expense.id==null ? '저장':'수정'}"></button>
+            <input type="hidden" th:field="*{id}" />
+            <input type="hidden" th:field="*{expenseId}" />
+
+
+            <a th:href="@{/expenses}">돌아가기</a>
         </form>
     </body>
 </html>

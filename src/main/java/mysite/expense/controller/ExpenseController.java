@@ -2,6 +2,7 @@ package mysite.expense.controller;
 
 import lombok.RequiredArgsConstructor;
 import mysite.expense.dto.ExpenseDTO;
+import mysite.expense.dto.ExpenseFilterDTO;
 import mysite.expense.entity.Expense;
 import mysite.expense.service.ExpenseService;
 import org.springframework.stereotype.Controller;
@@ -23,13 +24,14 @@ public class ExpenseController {
     @GetMapping("/expenses")
     public String showExpenseList(Model model) {
         model.addAttribute("expenses", expenseService.getAllExpenses());
+        model.addAttribute("filter", new ExpenseFilterDTO());
         return "expenses-list";
     }
 
     //get 요청시 비용 입력을 위한 창을 보여주기
     @GetMapping("createExpense")
     public String showCreateForm(Model model) {
-        model.addAttribute("expense", new ExpenseDTO());
+        model.addAttribute("expense", new ExpenseDTO());    // 빈 expense전달
         return "expenses-form";
     }
 
@@ -37,6 +39,7 @@ public class ExpenseController {
     public String saveOrUpdateExpense(@ModelAttribute("expense") ExpenseDTO expenseDTO) throws ParseException {
         System.out.println(expenseDTO);
         expenseService.saveExpenseDetails(expenseDTO);
+
         return "redirect:/expenses";
     }
 
@@ -48,10 +51,14 @@ public class ExpenseController {
         return "redirect:/expenses";
     }
 
+    // 수정 페이지 보여주기
     @GetMapping("/updateExpense")
-    public String updateExpense(@RequestParam("id") String expenseId) {
+    public String updateExpense(@RequestParam("id") String expenseId, Model model) {
+        // db에서 해당 id의 expense 객체를 가져온다.
+        model.addAttribute("expense", expenseService.getExpenseById(expenseId));
         System.out.println("변경할 사항 = " + expenseId);
-
         return "expenses-form";
     }
+
+
 }

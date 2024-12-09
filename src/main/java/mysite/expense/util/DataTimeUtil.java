@@ -7,7 +7,7 @@ public class DataTimeUtil {
     
     // 자바 날짜 date를 문자열 포맷으로 변환
     public static String convertDateString(Date date) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy년MM월dd일");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         return sdf.format(date);
     }
 
