@@ -7,19 +7,28 @@
   <body>
     <h1>비용 리스트</h1>
     <hr />
+    <div>
+      <a th:href="@{createExpense}">새 비용</a>
+    </div>
     <table border="1">
       <thead>
         <th>이름</th>
         <th>설명</th>
         <th>요금</th>
         <th>날짜</th>
+        <th>액션</th>
       </thead>
       <tbody>
         <tr th:each="exp : ${expenses}">
           <td th:text="${exp.name}"></td>
           <td th:text="${exp.description}"></td>
-          <td th:text="${exp.amount}"></td>
-          <td th:text="${#dates.format(exp.date, 'yyyy-MM-dd HH:mm:ss')}"></td>
+          <td th:text="|${#numbers.formatInteger(exp.amount,0,'COMMA')}원|"></td>
+          <td th:text="${exp.dataString}"></td>
+          <td>
+            <a onclick="return confirm('정말로 삭제하시겠습니까?')" th:href="@{/deleteExpense(id=${exp.expenseId})}" >삭제</a>
+            <span>|</span>
+            <a onclick="return confirm('수정하시겠습니까?')" th:href="@{/updateExpense(id=${exp.expenseId})}">수정</a>
+          </td>
         </tr>
       </tbody>
     </table>

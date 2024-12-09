@@ -4,11 +4,14 @@ import lombok.RequiredArgsConstructor;
 import mysite.expense.dto.ExpenseDTO;
 import mysite.expense.entity.Expense;
 import mysite.expense.repository.ExpenseRepository;
+import mysite.expense.util.DataTimeUtil;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.text.ParseException;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,6 +38,7 @@ public class ExpenseService {
     // 엔티티 -> DTO 변환(값을 전달)
     private ExpenseDTO mapToDTO(Expense expense) {
         ExpenseDTO expenseDTO = modelMapper.map(expense, ExpenseDTO.class); //modelmapper 활용
+        expenseDTO.setDataString(DataTimeUtil.convertDateString(expense.getDate()));
         // ExpenseDTO expenseDTO = new ExpenseDTO();   // 객체 생성
         // expenseDTO.setId(expense.getId());
         // expenseDTO.setExpenseId(expense.getExpenseId());
@@ -44,4 +48,29 @@ public class ExpenseService {
         // expenseDTO.setDate(expense.getDate());
         return expenseDTO;
     }
+
+    public ExpenseDTO saveExpenseDetails(ExpenseDTO expenseDTO) throws ParseException{
+        Expense expense = mapToEntity(expenseDTO);
+        expense = expRepo.save(expense);
+        return mapToDTO(expense);
+        }
+
+    private Expense mapToEntity(ExpenseDTO expenseDTO) throws ParseException {
+        Expense expense = modelMapper.map(expenseDTO, Expense.class);
+        // 1. expenseId 입력(유니크 문자열 자동생성)
+        expense.setExpenseId(UUID.randomUUID().toString());
+        // 2. date 입력("2024-12-17" => 자바 sql로 변경)
+        expense.setDate(DataTimeUtil.convertStringToDate(expenseDTO.getDataString()));
+        return expense;
+    }
+
+    public void deleteExpense(String id) {
+         Expense expense = expRepo.findByExpenseId(id).orElseThrow(
+                                 () -> new RuntimeException("해당 ID를 찾을수 없습니다."));
+
+        expRepo.delete(expense);
+    }
 }
+
+
+

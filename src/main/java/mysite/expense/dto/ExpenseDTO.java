@@ -5,8 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
-
-import java.util.Date;
+import java.sql.Date;
+//import java.util.Date;
 
 @Data   // Get,Set + toString
 @AllArgsConstructor // 전체 필드 생성자
