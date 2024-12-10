@@ -2,12 +2,15 @@ package mysite.expense.service;
 
 import lombok.RequiredArgsConstructor;
 import mysite.expense.dto.ExpenseDTO;
+import mysite.expense.dto.ExpenseFilterDTO;
 import mysite.expense.entity.Expense;
 import mysite.expense.repository.ExpenseRepository;
 import mysite.expense.util.DataTimeUtil;
+import org.hibernate.type.descriptor.DateTimeUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.sql.Date;
 import java.text.ParseException;
 import java.util.List;
 import java.util.Optional;
@@ -81,8 +84,16 @@ public class ExpenseService {
         return expenseDTO;  //DTO 변환
     }
 
-    public List<ExpenseDTO> getFilterExpenses(String keyword, String sortBy) {
-        List<Expense> list = expRepo.findByNameContainingOrDescriptionContaining(keyword, keyword);
+    public List<ExpenseDTO> getFilterExpenses(ExpenseFilterDTO filter) throws ParseException {
+        String keyword = filter.getKeyword();
+        String sortBy = filter.getSortBy();
+        String startDate = filter.getStartDate();
+        String endDate = filter.getEndDate();
+        // sql 날짜로 변경
+        Date startDay = !startDate.isEmpty() ? DataTimeUtil.convertStringToDate(startDate) : new Date(0);
+        Date endDay = !endDate.isEmpty() ? DataTimeUtil.convertStringToDate(endDate) : new Date(System.currentTimeMillis());
+
+        List<Expense> list = expRepo.findByNameContainingAndDateBetween(keyword, startDay, endDay);
         List<ExpenseDTO> listDTO = list.stream()    // 스트림으로 변환
                 .map(this::mapToDTO) // mapToDTO로 모두 변환
                 .collect(Collectors.toList());   // 다시 리스트로
@@ -91,10 +102,18 @@ public class ExpenseService {
         if(sortBy.equals("date")) {
             listDTO.sort(((o1,o2) -> o2.getDate().compareTo(o1.getDate())));
         } else {
-            listDTO.sort(((o1,o2) -> o2.getAmount().compareTo(o1.getAmount())));
+            listDTO.sort(((o1,o2) -> Double.compare(o2.getAmount(),o1.getAmount())));
         }
 
         return listDTO;
+    }
+
+    // 리스트의 총 비용 합계
+    public Long totalExpenses(List<ExpenseDTO> expenses) {
+        Long sum = expenses.stream()
+                           .mapToLong(x -> x.getAmount())
+                           .sum();
+        return sum;
     }
 }
 

@@ -1,5 +1,6 @@
 package mysite.expense.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mysite.expense.dto.ExpenseDTO;
 import mysite.expense.dto.ExpenseFilterDTO;
@@ -7,12 +8,14 @@ import mysite.expense.entity.Expense;
 import mysite.expense.service.ExpenseService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.text.ParseException;
+import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
@@ -23,8 +26,11 @@ public class ExpenseController {
 
     @GetMapping("/expenses")
     public String showExpenseList(Model model) {
-        model.addAttribute("expenses", expenseService.getAllExpenses());
+        List<ExpenseDTO> list = expenseService.getAllExpenses();
+        model.addAttribute("expenses", list);
         model.addAttribute("filter", new ExpenseFilterDTO());
+        Long total = expenseService.totalExpenses(list);
+        model.addAttribute("total", total);
         return "expenses-list";
     }
 
@@ -36,8 +42,12 @@ public class ExpenseController {
     }
 
     @PostMapping("/saveOrUpdateExpense")    // @ModelAttribute("expense") = expense 객체로 받겠다.
-    public String saveOrUpdateExpense(@ModelAttribute("expense") ExpenseDTO expenseDTO) throws ParseException {
+    public String saveOrUpdateExpense(@Valid @ModelAttribute("expense") ExpenseDTO expenseDTO, BindingResult result) throws ParseException {
         System.out.println(expenseDTO);
+
+        if(result.hasErrors()) {
+            return "expenses-form"; //에러 발생시 되돌아간다. (데이터 유효성 검사)
+        }
         expenseService.saveExpenseDetails(expenseDTO);
 
         return "redirect:/expenses";

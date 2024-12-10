@@ -11,10 +11,12 @@
         <hr />
         <form th:object="${expense}" th:action="@{/saveOrUpdateExpense}" method="post">
             <input type="text" th:field="*{name}" placeholder="이름 입력" />
+            <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></span>
             <br /><br />
             <input type="number" th:field="*{amount}" placeholder="비용 입력" />
+            <span th:if="${#fields.hasErrors('amount')}" th:errors="*{amount}"></span>
             <br /><br />
-            <input type="date" th:field="*{dataString}"/>
+            <input type="date" required th:field="*{dataString}"/>
             <br /><br />
             <textarea rows="5" placeholder="설명 입력" th:field="*{description}" style="resize: none !important;"></textarea>
             <br /><br />

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>로그인 페이지</title>
+</head>
+<body>
+<h1>로그인</h1>
+<hr />
+<div th:if="${successMsg}">
+    <h1>가입성공!</h1>
+    <p>가입해주셔서 감사합니다. 이제 당신의 비용관리를 시작하세요!</p>
+</div>
+</body>
+</html>
