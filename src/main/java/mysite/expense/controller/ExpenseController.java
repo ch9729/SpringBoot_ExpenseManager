@@ -17,58 +17,56 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.text.ParseException;
 import java.util.List;
 
+
 @Controller
 @RequiredArgsConstructor
 public class ExpenseController {
 
-    private final ExpenseService expenseService;
-
+    private final ExpenseService expService;
 
     @GetMapping("/expenses")
-    public String showExpenseList(Model model) {
-        List<ExpenseDTO> list = expenseService.getAllExpenses();
+    public String showList(Model model) {
+        List<ExpenseDTO> list = expService.getAllExpenses();
         model.addAttribute("expenses", list);
         model.addAttribute("filter", new ExpenseFilterDTO());
-        Long total = expenseService.totalExpenses(list);
+        Long total = expService.totalExpenses(list);
         model.addAttribute("total", total);
-        return "expenses-list";
+        return "e_list";
     }
 
     //get 요청시 비용 입력을 위한 창을 보여주기
-    @GetMapping("createExpense")
+    @GetMapping("/createExpense")
     public String showCreateForm(Model model) {
-        model.addAttribute("expense", new ExpenseDTO());    // 빈 expense전달
-        return "expenses-form";
+        model.addAttribute("expense", new ExpenseDTO()); //빈 expense 객체 전달
+        return "e_form";
     }
 
-    @PostMapping("/saveOrUpdateExpense")    // @ModelAttribute("expense") = expense 객체로 받겠다.
-    public String saveOrUpdateExpense(@Valid @ModelAttribute("expense") ExpenseDTO expenseDTO, BindingResult result) throws ParseException {
-        System.out.println(expenseDTO);
-
-        if(result.hasErrors()) {
-            return "expenses-form"; //에러 발생시 되돌아간다. (데이터 유효성 검사)
+    @PostMapping("/saveOrUpdateExpense")
+    public String saveOrUpdateExpense(@Valid @ModelAttribute("expense") ExpenseDTO expenseDTO,
+                                      BindingResult result) throws ParseException {
+        System.out.println("입력한 expenseDTO 객체 : " + expenseDTO);
+        if (result.hasErrors()) {
+            return "e_form"; //되돌아감(validation error)
         }
-        expenseService.saveExpenseDetails(expenseDTO);
-
+        expService.saveExpenseDetails(expenseDTO);
         return "redirect:/expenses";
     }
 
     @GetMapping("/deleteExpense")
     public String deleteExpense(@RequestParam("id") String expenseId) {
-
-        System.out.println("삭제번호 = " +expenseId);
-        expenseService.deleteExpense(expenseId);
+        System.out.println("삭제할 비용 번호 : " + expenseId);
+        expService.deleteExpense(expenseId);
         return "redirect:/expenses";
     }
 
-    // 수정 페이지 보여주기
+    //수정할 페이지 보여주기
     @GetMapping("/updateExpense")
     public String updateExpense(@RequestParam("id") String expenseId, Model model) {
-        // db에서 해당 id의 expense 객체를 가져온다.
-        model.addAttribute("expense", expenseService.getExpenseById(expenseId));
-        System.out.println("변경할 사항 = " + expenseId);
-        return "expenses-form";
+        System.out.println("업데이트 비용 id : " + expenseId);
+        //DB에서 해당 id의 객체를 전달하여 수정할수 있게함.
+        ExpenseDTO expenseDTO = expService.getExpenseById(expenseId);
+        System.out.println(expenseDTO);
+        model.addAttribute("expense", expenseDTO );
+        return "e_form";
     }
-
-
 }

@@ -8,12 +8,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ExpenseFilterDTO {
-
-    private String keyword; // 검색어
-
-    private String sortBy;  // 순서
-
-    private String startDate;   // 시작일
-
-    private String endDate; // 종료일
+    //검색어
+    private String keyword;
+    //순서
+    private String sortBy;
+    //시작일
+    private String startDate;
+    //종료일
+    private String endDate;
 }

@@ -5,83 +5,73 @@ import mysite.expense.dto.ExpenseDTO;
 import mysite.expense.dto.ExpenseFilterDTO;
 import mysite.expense.entity.Expense;
 import mysite.expense.repository.ExpenseRepository;
-import mysite.expense.util.DataTimeUtil;
-import org.hibernate.type.descriptor.DateTimeUtils;
+import mysite.expense.util.DateTimeUtil;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Date;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor    // final이 붙은 필드로 생성자를 만들어준다.
+@RequiredArgsConstructor //final 붙은 필드로 생성자를 만듬
 public class ExpenseService {
-    
+
     private final ExpenseRepository expRepo;
     private final ModelMapper modelMapper;
-    
-    // @Autowired 대신 생성자 주입으로 하는 것이 효과적
-    // public ExpenseService(ExpenseRepository expRepo) {
-    //     this.expRepo = expRepo;
-    // }
 
-    //모든 비용 리스트를 가져온다.
+    //모든 비용 리스트를 가져옴
     public List<ExpenseDTO> getAllExpenses() {
         List<Expense> list = expRepo.findAll();
-        List<ExpenseDTO> listDTO = list.stream()    // 스트림으로 변환
-                                   .map(this::mapToDTO) // mapToDTO로 모두 변환
-                                   .collect(Collectors.toList());   // 다시 리스트로
+        List<ExpenseDTO> listDTO = list.stream() //스트림으로 변환
+                .map(this::mapToDTO)     //mapToDTO 로 모두 변환됨
+                .collect(Collectors.toList());   //다시 리스트로
         return listDTO;
     }
-
-    // 엔티티 -> DTO 변환(값을 전달)
+    //엔티티 => DTO 변환 (값을 전달)
     private ExpenseDTO mapToDTO(Expense expense) {
-        ExpenseDTO expenseDTO = modelMapper.map(expense, ExpenseDTO.class); //modelmapper 활용
-        expenseDTO.setDataString(DataTimeUtil.convertDateString(expense.getDate()));
-        // ExpenseDTO expenseDTO = new ExpenseDTO();   // 객체 생성
-        // expenseDTO.setId(expense.getId());
-        // expenseDTO.setExpenseId(expense.getExpenseId());
-        // expenseDTO.setAmount(expense.getAmount());
-        // expenseDTO.setName(expense.getName());
-        // expenseDTO.setDescription(expense.getDescription());
-        // expenseDTO.setDate(expense.getDate());
+        ExpenseDTO expenseDTO = modelMapper.map(expense, ExpenseDTO.class);
+        expenseDTO.setDateString(DateTimeUtil.convertDateString(expenseDTO.getDate()));
         return expenseDTO;
     }
 
-    public ExpenseDTO saveExpenseDetails(ExpenseDTO expenseDTO) throws ParseException{
+    public ExpenseDTO saveExpenseDetails(ExpenseDTO expenseDTO) throws ParseException {
+        //1. DTO => Entity
         Expense expense = mapToEntity(expenseDTO);
+        //2. DB에 저장
         expense = expRepo.save(expense);
+        //3. Entity => DTO
         return mapToDTO(expense);
-        }
+    }
 
     private Expense mapToEntity(ExpenseDTO expenseDTO) throws ParseException {
         Expense expense = modelMapper.map(expenseDTO, Expense.class);
-        // 1. expenseId 입력(유니크 문자열 자동생성), 업데이트 경우 id를 만들면 안되서 id값이 null 일경우에만 생성
+        //1. expenseId 입력 ( 유니크 문자열 자동생성 ), 업데이트 일경우 id 를 만들지 않는다.
         if(expenseDTO.getId() == null) {
             expense.setExpenseId(UUID.randomUUID().toString());
         }
-        // 2. date 입력("2024-12-17" => 자바 sql로 변경)
-        expense.setDate(DataTimeUtil.convertStringToDate(expenseDTO.getDataString()));
+        //2. date 입력 ("2024-12-17" => sql Date)
+        expense.setDate(DateTimeUtil.convertStringToDate(expenseDTO.getDateString()));
         return expense;
     }
 
+    //비용 id 로 삭제하기
     public void deleteExpense(String id) {
-         Expense expense = expRepo.findByExpenseId(id).orElseThrow(
-                                 () -> new RuntimeException("해당 ID를 찾을수 없습니다."));
-
+        Expense expense = expRepo.findByExpenseId(id).orElseThrow(
+                ()->new RuntimeException("해당 ID의 비용을 찾을 수 없습니다."));
         expRepo.delete(expense);
     }
-    
-    // expenseId로 수정할 expense 찾아서 DTO변환하여 리턴
+
+    //expenseId 로 수정할 expense 찾아서 expenseDTO 변환하여 리턴
     public ExpenseDTO getExpenseById(String id) {
         Expense expense = expRepo.findByExpenseId(id).orElseThrow(
-                              () -> new RuntimeException("해당 ID를 찾을수 없습니다."));
-        ExpenseDTO expenseDTO = mapToDTO(expense);
-        return expenseDTO;  //DTO 변환
+                ()->new RuntimeException("해당 ID의 비용을 찾을 수 없습니다.")
+        );
+        return mapToDTO(expense); //DTO 변환
     }
 
     public List<ExpenseDTO> getFilterExpenses(ExpenseFilterDTO filter) throws ParseException {
@@ -89,33 +79,28 @@ public class ExpenseService {
         String sortBy = filter.getSortBy();
         String startDate = filter.getStartDate();
         String endDate = filter.getEndDate();
-        // sql 날짜로 변경
-        Date startDay = !startDate.isEmpty() ? DataTimeUtil.convertStringToDate(startDate) : new Date(0);
-        Date endDay = !endDate.isEmpty() ? DataTimeUtil.convertStringToDate(endDate) : new Date(System.currentTimeMillis());
-
+        //sql 날짜로 변경
+        Date startDay = !startDate.isEmpty() ? DateTimeUtil.convertStringToDate(startDate) : new Date(0);
+        Date endDay = !endDate.isEmpty() ? DateTimeUtil.convertStringToDate(endDate) : new Date(System.currentTimeMillis());
         List<Expense> list = expRepo.findByNameContainingAndDateBetween(keyword, startDay, endDay);
-        List<ExpenseDTO> listDTO = list.stream()    // 스트림으로 변환
-                .map(this::mapToDTO) // mapToDTO로 모두 변환
-                .collect(Collectors.toList());   // 다시 리스트로
-
+        List<ExpenseDTO> filterList = list.stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
         //날짜 또는 가격으로 정렬
         if(sortBy.equals("date")) {
-            listDTO.sort(((o1,o2) -> o2.getDate().compareTo(o1.getDate())));
+            filterList.sort(((o1, o2) -> o2.getDate().compareTo(o1.getDate())));
         } else {
-            listDTO.sort(((o1,o2) -> Double.compare(o2.getAmount(),o1.getAmount())));
+            filterList.sort(((o1, o2) -> o2.getAmount().compareTo(o1.getAmount())));
         }
-
-        return listDTO;
+        return filterList;
     }
 
-    // 리스트의 총 비용 합계
+    // 리스트의 총비용을 합계
     public Long totalExpenses(List<ExpenseDTO> expenses) {
         Long sum = expenses.stream()
-                           .mapToLong(x -> x.getAmount())
-                           .sum();
+                .mapToLong(n -> n.getAmount())
+                .sum();
         return sum;
     }
+
 }
-
-
-

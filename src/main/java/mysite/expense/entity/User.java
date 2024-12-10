@@ -6,23 +6,22 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Data
+@Table(name = "tbl_users")
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name= "tbl_users")
+@Data
 public class User {
-
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY )
     private Long id;
 
     @Column(unique = true)
-    private String userId;
+    private String userId; //유저아이디 유니크(중복X)
 
     private String name;
 
     @Column(unique = true)
-    private String email;
+    private String email; //이메일 유니크(중복X)
 
     private String password;
 }

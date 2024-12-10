@@ -5,6 +5,7 @@ import mysite.expense.dto.UserDTO;
 import mysite.expense.entity.User;
 import mysite.expense.repository.UserRepository;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -12,17 +13,18 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class UserService {
-
     private final UserRepository uRepo;
-    private final ModelMapper modelMapper;  //DTO <--> entity변환
+    private final ModelMapper modelMapper; //DTO <-> entity 변환
+    private final PasswordEncoder passwordEncoder;
 
     public void save(UserDTO userDTO) {
-        User user = mapToUser(userDTO);
-        user.setUserId(UUID.randomUUID().toString());   //중복되지 않는 id값 생성
+        userDTO.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+        User user = mapToEntity(userDTO);
+        user.setUserId(UUID.randomUUID().toString()); //랜덤 ID
         uRepo.save(user);
     }
-    
-    public User mapToUser(UserDTO userDTO) {
+
+    private User mapToEntity(UserDTO userDTO) {
         return modelMapper.map(userDTO, User.class);
     }
 }
