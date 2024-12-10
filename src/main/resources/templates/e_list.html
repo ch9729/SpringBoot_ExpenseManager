@@ -8,6 +8,7 @@
 <body>
 <h1>비용 리스트</h1>
 <hr />
+<div><a th:href="@{/logout}">로그아웃</a> </div>
 <h2>당신이 사용한 비용은 총 <span th:text="|${#numbers.formatInteger(total,0,'COMMA')}원|"></span> 입니다!</h2>
 <form th:object="${filter}" th:action="@{/filterExpenses}">
   키워드 검색 : <input type="text" th:field="*{keyword}" placeholder="키워드 입력" />
