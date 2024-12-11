@@ -14,6 +14,5 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
     //SELECT * FROM tbl_expense WHERE name LIKE %keyword% AND date BETWEEN startDate AND endDate
     List<Expense> findByNameContainingAndDateBetweenAndUserId(String keyword, Date start, Date end, Long id);
 
-    // 유저 ID로 유저의 모든 비용 리스트 가져오기
-    List<Expense> findByUserId(Long id);
+    List<Expense> findByUserIdAndDateBetween(Long id, Date start, Date end);
 }

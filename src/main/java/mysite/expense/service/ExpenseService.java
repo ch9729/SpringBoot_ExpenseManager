@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Date;
 import java.text.ParseException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -30,7 +31,9 @@ public class ExpenseService {
     //모든 비용 리스트를 가져옴(인증 유저의 비용들만)
     public List<ExpenseDTO> getAllExpenses() {
         User user = uService.getLoggedInUser();
-        List<Expense> list = expRepo.findByUserId(user.getId());
+        List<Expense> list = expRepo.findByUserIdAndDateBetween(user.getId(),
+                                                                Date.valueOf(LocalDate.now().withDayOfMonth(1)),
+                                                                Date.valueOf(LocalDate.now()));
         List<ExpenseDTO> listDTO = list.stream() //스트림으로 변환
                 .map(this::mapToDTO)     //mapToDTO 로 모두 변환됨
                 .collect(Collectors.toList());   //다시 리스트로

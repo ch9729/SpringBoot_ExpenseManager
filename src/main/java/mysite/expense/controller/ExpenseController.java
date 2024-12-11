@@ -6,6 +6,7 @@ import mysite.expense.dto.ExpenseDTO;
 import mysite.expense.dto.ExpenseFilterDTO;
 import mysite.expense.entity.Expense;
 import mysite.expense.service.ExpenseService;
+import mysite.expense.util.DateTimeUtil;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -30,7 +31,7 @@ public class ExpenseController {
         // list = null;
         // list.size();    //에러발생
         model.addAttribute("expenses", list);
-        model.addAttribute("filter", new ExpenseFilterDTO());
+        model.addAttribute("filter", new ExpenseFilterDTO(DateTimeUtil.getCurrentMonthStartDate(), DateTimeUtil.getCurrentMonthDate()));
         Long total = expService.totalExpenses(list);
         model.addAttribute("total", total);
         return "e_list";
