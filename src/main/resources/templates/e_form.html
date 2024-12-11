@@ -41,7 +41,7 @@
       <textarea rows="5" placeholder="설명 입력" th:field="*{description}" class="form-control col-12 col-sm-12 col-md-6 input-width mb-3"> </textarea>
 
       <button type="submit" class="btn button_default" th:text="${expense.id} != null ? '수정하기' : '저장하기'"></button>
-
+      <button type="submit" class="btn btn-danger" th:if="${expense.id} !=null "><a th:href="@{/deleteExpense(id=${expense.expenseId})}" class="text-light">삭제하기</a></button>
       <input type="hidden" th:field="*{id}" />
       <input type="hidden" th:field="*{expenseId}" />
     </form>
