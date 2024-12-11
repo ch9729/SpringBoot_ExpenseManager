@@ -5,6 +5,8 @@ import mysite.expense.dto.UserDTO;
 import mysite.expense.entity.User;
 import mysite.expense.repository.UserRepository;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -26,5 +28,15 @@ public class UserService {
 
     private User mapToEntity(UserDTO userDTO) {
         return modelMapper.map(userDTO, User.class);
+    }
+
+    // 인증된 유저객체 리턴
+    public User getLoggedInUser() {
+        // 시큐리티를 이용해 현재 인증된 유저의 이메일을 가져와 DB찾아서 유저객체 리턴
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String loginUserEmail = auth.getName();
+        User user = uRepo.findByEmail(loginUserEmail).orElseThrow(() ->
+                new RuntimeException("이메일을 찾을수 없습니다."));
+        return user;
     }
 }

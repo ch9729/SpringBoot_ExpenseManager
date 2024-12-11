@@ -39,7 +39,7 @@ public class SecurityConfig {
                 ).logout((logout) ->
                         logout
                                 .logoutUrl("/logout")
-                                .invalidateHttpSession(true)
+                                .invalidateHttpSession(true)    // 로그인시 세션저장 전부 삭제
                                 .clearAuthentication(true)
                                 .logoutSuccessUrl("/login?logout=true")
                                 .permitAll())
